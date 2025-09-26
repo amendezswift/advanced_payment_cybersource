@@ -32,8 +32,12 @@ _logger = logging.getLogger(__name__)
 
 class WebsiteSaleFormCyberSource(http.Controller):
     """ This class is used to do the payment """
-    @http.route('/payment/cybersource/simulate_payment', type='json',
-                auth='public')
+    @http.route(
+        '/payment/cybersource/simulate_payment',
+        type='json',
+        auth='public',
+        csrf=False,
+    )
     def payment_with_flex_token(self, **post):
         """ This is used for Payment processing using the flex token """
         address = request.env['res.partner'].browse(
@@ -101,8 +105,10 @@ class WebsiteSaleFormCyberSource(http.Controller):
                 raise ValidationError(_("Your Payment has not been processed"))
             return return_data
         except Exception as e:
-            _logger.info(
-                "\nException when calling PaymentsApi->create_payment: %s\n" % e)
+            _logger.exception(
+                "Exception when calling PaymentsApi->create_payment: %s", e,
+            )
+            raise ValidationError(_("Your Payment has not been processed"))
 
     if __name__ == "__main__":
         """This is used to Payment processing using the flex token"""

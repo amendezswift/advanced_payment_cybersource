@@ -12,10 +12,10 @@
                            string="Merchant ID"
                            required="code == 'cybersource' and state != 'disabled'"/>
                     <field name="cyber_key"
-                           string="key" password="1"
+                           string="key" password="True"
                            required="code == 'cybersource' and state != 'disabled'"/>
                     <field name="cyber_secret_key"
-                           string="Secret key" password="1"
+                           string="Secret key" password="True"
                            required="code == 'cybersource' and state != 'disabled'"/>
                 </group>
             </group>
