@@ -40,12 +40,8 @@
         'data/cybersource_payment_provider_data.xml',
         'views/payment_provider_views.xml',
         'views/payment_transaction_views.xml',
-        'views/order_receipt_extend.xml',
     ],
     'assets': {
-        'point_of_sale._assets_pos': [
-        'advanced_payment_cybersource/static/src/xml/order_receipt_extend.xml',
-        ],
         'web.assets_frontend': [
             '/advanced_payment_cybersource/static/src/js/payment_form.js',
         ],
