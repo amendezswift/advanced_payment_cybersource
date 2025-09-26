@@ -1,68 +1,71 @@
 /** @odoo-module */
 import { _t } from "@web/core/l10n/translation";
-import paymentForm from '@payment/js/payment_form';
-import { Dialog } from "@web/core/dialog/dialog";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import paymentForm from "@payment/js/payment_form";
+import { patch } from "@web/core/utils/patch";
 
-// Payment process with cybersource
-paymentForm.include({
-    _processRedirectFlow(providerCode, paymentOptionId, paymentMethodCode, processingValues) {
-        if (providerCode !== 'cybersource') {
-            return this._super(...arguments);
+const originalProcessRedirectFlow = paymentForm.prototype._processRedirectFlow;
+
+patch(paymentForm.prototype, "advanced_payment_cybersource.PaymentForm", {
+    async _processRedirectFlow(providerCode, paymentOptionId, paymentMethodCode, processingValues) {
+        if (providerCode !== "cybersource") {
+            return originalProcessRedirectFlow.call(
+                this,
+                providerCode,
+                paymentOptionId,
+                paymentMethodCode,
+                processingValues,
+            );
         }
-        var customerInputNumber = $('#customer_input_number').val();
-        const customerInputName = $('#customer_input_name').val();
-        const expMonth = $('#customer_input_month').val();
-        const expYear = $('#customer_input_year').val();
-        const cvv = $('#customer_input_cvv').val();
-        var self = this;
-        let currentDate = new Date();
-        let previousMonth = new Date();
+        const customerInputNumber = $("#customer_input_number").val();
+        const customerInputName = $("#customer_input_name").val();
+        const expMonth = $("#customer_input_month").val();
+        const expYear = $("#customer_input_year").val();
+        const cvv = $("#customer_input_cvv").val();
+        const currentDate = new Date();
+        const previousMonth = new Date();
         previousMonth.setMonth(currentDate.getMonth() - 1);
         // Display error if card number is null
-        if(customerInputNumber == "") {
+        if (!customerInputNumber) {
             this._displayErrorDialog(
                 _t("Server Error"),
-                _t("We are not able to process your payment Card Number not entered")
+                _t("We are not able to process your payment Card Number not entered"),
             );
+            return;
         }
         // Display error if card is expired
-        else if (expYear <= previousMonth.getFullYear() && currentDate.getMonth() <= previousMonth.getMonth()) {
-            var self = this;
-            self._displayErrorDialog(
+        if (expYear <= previousMonth.getFullYear() && currentDate.getMonth() <= previousMonth.getMonth()) {
+            this._displayErrorDialog(
                 _t("Server Error"),
-                _t("We are not able to process your payment. Expiry year is not valid")
+                _t("We are not able to process your payment. Expiry year is not valid"),
             );
+            return;
         }
         // Display error if card expiry month is not a valid one
-        else if(expMonth == 0) {
-            var self = this;
-            self._displayErrorDialog(
+        if (expMonth == 0) {
+            this._displayErrorDialog(
                 _t("Server Error"),
-                _t("We are not able to process your payment. Expiry month not valid.")
+                _t("We are not able to process your payment. Expiry month not valid."),
             );
+            return;
         }
         // If details are correct process the payment
-        else {
-            return jsonrpc(
-                '/payment/cybersource/simulate_payment',
-                {
-                    'reference': processingValues.reference,
-                    'customer_input': {
-                        'exp_year': expYear,
-                        'exp_month': expMonth,
-                        'name':customerInputName,
-                        'card_num':customerInputNumber,
-                        'cvv':cvv,
-                    },
-                    'values':{
-                        'amount': processingValues.amount,
-                        'currency': processingValues.currency_id,
-                        'partner': processingValues.partner_id,
-                        'order': processingValues.reference
-                    },
-                },
-           ).then(() => window.location = '/payment/status');
-        }
+        await jsonrpc("/payment/cybersource/simulate_payment", {
+            reference: processingValues.reference,
+            customer_input: {
+                exp_year: expYear,
+                exp_month: expMonth,
+                name: customerInputName,
+                card_num: customerInputNumber,
+                cvv,
+            },
+            values: {
+                amount: processingValues.amount,
+                currency: processingValues.currency_id,
+                partner: processingValues.partner_id,
+                order: processingValues.reference,
+            },
+        });
+        window.location = "/payment/status";
     },
-})
+});

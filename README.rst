@@ -26,7 +26,8 @@ Company
 Credits
 -------
 * Developers: (V16) Gayathri V,
-              (V17) Aysha Shalin
+              (V17) Aysha Shalin,
+              (V19) Migration Team
   Contact: odoo@cybrosys.com
 
 Contacts

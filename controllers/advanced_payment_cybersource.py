@@ -20,22 +20,65 @@
 #
 ###############################################################################
 import json
+import logging
 import os
-from CyberSource import *
-from CyberSource.logging.log_configuration import LogConfiguration
+
 from odoo import _, http
 from odoo.exceptions import ValidationError
 from odoo.http import request
-import logging
+
+try:
+    from CyberSource import (  # type: ignore[import-not-found]
+        CreatePaymentRequest,
+        Ptsv2paymentsClientReferenceInformation,
+        Ptsv2paymentsConsumerAuthenticationInformation,
+        Ptsv2paymentsOrderInformation,
+        Ptsv2paymentsOrderInformationAmountDetails,
+        Ptsv2paymentsOrderInformationBillTo,
+        Ptsv2paymentsPaymentInformation,
+        Ptsv2paymentsPaymentInformationTokenizedCard,
+        Ptsv2paymentsProcessingInformation,
+    )
+    from CyberSource.apis.payments_api import PaymentsApi  # type: ignore[import-not-found]
+    from CyberSource.logging.log_configuration import LogConfiguration  # type: ignore[import-not-found]
+except ImportError as import_err:  # pragma: no cover - guard runtime dependency
+    CreatePaymentRequest = None  # type: ignore[assignment]
+    LogConfiguration = None  # type: ignore[assignment]
+    PaymentsApi = None  # type: ignore[assignment]
+    Ptsv2paymentsClientReferenceInformation = None  # type: ignore[assignment]
+    Ptsv2paymentsConsumerAuthenticationInformation = None  # type: ignore[assignment]
+    Ptsv2paymentsOrderInformation = None  # type: ignore[assignment]
+    Ptsv2paymentsOrderInformationAmountDetails = None  # type: ignore[assignment]
+    Ptsv2paymentsOrderInformationBillTo = None  # type: ignore[assignment]
+    Ptsv2paymentsPaymentInformation = None  # type: ignore[assignment]
+    Ptsv2paymentsPaymentInformationTokenizedCard = None  # type: ignore[assignment]
+    Ptsv2paymentsProcessingInformation = None  # type: ignore[assignment]
+    CYBERSOURCE_IMPORT_ERROR = import_err
+else:
+    CYBERSOURCE_IMPORT_ERROR = None
+
 _logger = logging.getLogger(__name__)
 
 
 class WebsiteSaleFormCyberSource(http.Controller):
     """ This class is used to do the payment """
-    @http.route('/payment/cybersource/simulate_payment', type='json',
-                auth='public')
+    @http.route(
+        '/payment/cybersource/simulate_payment',
+        type='json',
+        auth='public',
+        csrf=False,
+    )
     def payment_with_flex_token(self, **post):
         """ This is used for Payment processing using the flex token """
+        if CYBERSOURCE_IMPORT_ERROR:
+            raise ValidationError(
+                _(
+                    "CyberSource Python SDK is not available: %s. "
+                    "Please install a compatible version (for example ``pip install 'cybersource-rest-client<0.0.11'``) "
+                    "or downgrade urllib3 to <2.0."
+                )
+                % CYBERSOURCE_IMPORT_ERROR
+            )
         address = request.env['res.partner'].browse(
             post.get('values')['partner'])
         client_reference_information = Ptsv2paymentsClientReferenceInformation(
@@ -101,8 +144,10 @@ class WebsiteSaleFormCyberSource(http.Controller):
                 raise ValidationError(_("Your Payment has not been processed"))
             return return_data
         except Exception as e:
-            _logger.info(
-                "\nException when calling PaymentsApi->create_payment: %s\n" % e)
+            _logger.exception(
+                "Exception when calling PaymentsApi->create_payment: %s", e,
+            )
+            raise ValidationError(_("Your Payment has not been processed"))
 
     if __name__ == "__main__":
         """This is used to Payment processing using the flex token"""
@@ -110,6 +155,15 @@ class WebsiteSaleFormCyberSource(http.Controller):
 
     def get_configuration(self):
         """ This is used for Payment provider configuration """
+        if CYBERSOURCE_IMPORT_ERROR or not LogConfiguration:
+            raise ValidationError(
+                _(
+                    "CyberSource Python SDK is not available: %s. "
+                    "Please install a compatible version (for example ``pip install 'cybersource-rest-client<0.0.11'``) "
+                    "or downgrade urllib3 to <2.0."
+                )
+                % CYBERSOURCE_IMPORT_ERROR
+            )
         record = request.env['payment.provider'].sudo().search(
             [('code', '=', 'cybersource')])
         configuration_dictionary = {
