@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_provider_form_cybersource" model="ir.ui.view">
+        <field name="name">payment.provider.form.cybersource.credentials</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='provider_credentials']" position="inside">
+                <group name="cybersource_credentials" attrs="{'invisible': [('code', '!=', 'cybersource')]}">
+                    <group>
+                        <field name="cyber_merchant" required="code == 'cybersource' and state != 'disabled'"/>
+                        <field name="cyber_key" password="1" required="code == 'cybersource' and state != 'disabled'"/>
+                    </group>
+                    <group>
+                        <field name="cyber_secret_key" password="1" required="code == 'cybersource' and state != 'disabled'"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

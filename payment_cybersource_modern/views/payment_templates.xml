@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_cybersource_inline_form" name="CyberSource Inline Form">
+        <div class="o_cybersource_inline_form" t-attf-id="cybersource-inline-form-{{ provider_id }}">
+            <input type="hidden" name="provider_id" t-att-value="provider_id"/>
+            <div class="o_cybersource_field_group">
+                <label for="cybersource_card_number" class="o_form_label">
+                    <span t-esc="_('Card Number')"/>
+                </label>
+                <input id="cybersource_card_number" name="cybersource_card_number" type="text" class="o_input" placeholder="XXXX XXXX XXXX XXXX" required="required" autocomplete="cc-number"/>
+            </div>
+            <div class="o_cybersource_field_group">
+                <label for="cybersource_card_holder" class="o_form_label">
+                    <span t-esc="_('Card Holder Name')"/>
+                </label>
+                <input id="cybersource_card_holder" name="cybersource_card_holder" type="text" class="o_input" placeholder="John Doe" required="required" autocomplete="cc-name"/>
+            </div>
+            <div class="o_cybersource_field_row">
+                <div class="o_cybersource_field_group">
+                    <label for="cybersource_exp_month" class="o_form_label">
+                        <span t-esc="_('Expiry Month')"/>
+                    </label>
+                    <input id="cybersource_exp_month" name="cybersource_exp_month" type="text" class="o_input" placeholder="MM" required="required" maxlength="2" inputmode="numeric" autocomplete="cc-exp-month"/>
+                </div>
+                <div class="o_cybersource_field_group">
+                    <label for="cybersource_exp_year" class="o_form_label">
+                        <span t-esc="_('Expiry Year')"/>
+                    </label>
+                    <input id="cybersource_exp_year" name="cybersource_exp_year" type="text" class="o_input" placeholder="YYYY" required="required" maxlength="4" inputmode="numeric" autocomplete="cc-exp-year"/>
+                </div>
+                <div class="o_cybersource_field_group">
+                    <label for="cybersource_cvv" class="o_form_label">
+                        <span t-esc="_('CVV')"/>
+                    </label>
+                    <input id="cybersource_cvv" name="cybersource_cvv" type="password" class="o_input" placeholder="***" required="required" maxlength="4" inputmode="numeric" autocomplete="cc-csc"/>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>
+
