@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_transaction_form_cybersource" model="ir.ui.view">
+        <field name="name">payment.transaction.form.cybersource.controls</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <field name="capture_manually" invisible="1"/>
+                <button
+                    name="action_cybersource_set_done"
+                    string="Authorize"
+                    type="object"
+                    class="oe_highlight"
+                    attrs="{'invisible': ['|', ('provider_code', '!=', 'cybersource'), '|', ('state', '!=', 'pending'), ('capture_manually', '=', False)]}"
+                />
+                <button
+                    name="action_cybersource_set_canceled"
+                    string="Cancel"
+                    type="object"
+                    attrs="{'invisible': [('provider_code', '!=', 'cybersource'), ('state', '!=', 'pending')]}"
+                />
+                <button
+                    name="action_cybersource_set_error"
+                    string="Mark as Error"
+                    type="object"
+                    attrs="{'invisible': [('provider_code', '!=', 'cybersource'), ('state', '!=', 'pending')]}"
+                />
+            </header>
+        </field>
+    </record>
+</odoo>
+
